@@ -88,10 +88,6 @@ proto = grpcless.Proto("test.proto", # 在此处可引入多个 .proto 文件
 #     other_include: list[str] = [] # 其它导入列表
 
 
-# 这里可以定义全局中间件
-# 由于中间件暂时并不稳定，这里暂时不提供示例
-
-
 # 生命周期定义
 async def life(*args,**kwargs):
     # your_code
@@ -99,9 +95,20 @@ async def life(*args,**kwargs):
     # 由于没有实现拦截信号，这里的代码暂时不会执行
 # 在 GRPCLess 中指定 life 参数即可
 
-
 # 定义服务
 app = grpcless.GRPCLess(proto, "test.proto:TestService") # 这里可一次引入多个服务
+
+
+# 这里可以定义全局中间件，中间件本质上是一个装饰器
+def middleware(func: Callable[[Any], Any]) -> Callable:
+    async def warpper(request) -> Any: # 注意中间件处理的是请求对象而不是流
+        # tips: 如果需要直接对流进行处理可以注册为 grpclib 中间件
+        print("Middleware called! ")
+        ret = await func(request)
+        return ret
+    return warpper
+# app.add_middleware(middleware)
+# 越晚被注册的中间件会在越内层运行
 
 # 一元请求
 # 如果具有多个 Service，请使用 Service:function 的形式
@@ -113,7 +120,7 @@ async def simple_method(int32_value: int, int64_value: int,
     print("simple_method", int32_value, int64_value, bytes_value, name)
     return { # 以字典形式返回值，注意也只展开一层
         "status_code": 114514,
-        "a": test_pb2.RequestX( # 对于嵌套消息仍旧需要手动构建
+        "a": test_pb2.InnerMsg( # 对于嵌套消息仍旧需要手动构建
             value=1
         )
     }

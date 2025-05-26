@@ -1,5 +1,4 @@
-from importlib import metadata
-from typing import Callable, Coroutine, Any
+from typing import Callable, Any
 import traceback
 
 from .. import log
@@ -7,8 +6,8 @@ from grpclib.exceptions import GRPCError, StreamTerminatedError
 from grpclib.const import Status
 
 
-def ErrorTraceMiddleware(func: Callable[[Any], Coroutine]) -> Callable:
-    async def warpper(request) -> Coroutine:
+def ErrorTraceMiddleware(func: Callable[[Any], Any]) -> Callable:
+    async def warpper(request) -> Any:
         try:
             ret = await func(request)
         except GRPCError as e:

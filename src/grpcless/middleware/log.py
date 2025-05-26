@@ -4,8 +4,8 @@ import random
 from .. import log
 
 
-def LogMiddleware(func: Callable[[Any], Coroutine]) -> Callable:
-    async def warpper(request) -> Coroutine:
+def LogMiddleware(func: Callable[[Any], Any]) -> Callable:
+    async def warpper(request) -> Any:
         st = time.time()
         try:
             ret = await func(request)
@@ -19,8 +19,8 @@ def LogMiddleware(func: Callable[[Any], Coroutine]) -> Callable:
     return warpper
 
 
-def LogStreamMiddleware(func: Callable[[Any], Coroutine]) -> Callable:
-    async def warpper(request) -> Coroutine:
+def LogStreamMiddleware(func: Callable[[Any], Any]) -> Callable:
+    async def warpper(request) -> Any:
         st = time.time()
         stream_id = random.randint(1000, 9999)
         log.log_stream_start(request.req_name, stream_id)
