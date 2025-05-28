@@ -86,3 +86,8 @@ def log_build_start() -> None:
 def log_build(msg: str) -> None:
     sys.stdout.write(
         f'{FG_GREY}{get_t()}{RESET}|{BG_BLUE}BUILD  {RESET}|{FG_GREY}{format_time_duration(sys_time.time()-st_time):>6}{RESET}|{msg}\n')
+
+
+def log_client(dur: float, msg: str) -> None:
+    sys.stdout.write(
+        f'{FG_GREY}{get_t()}{RESET}|{BG_CYAN}CLIENT {RESET}|{FG_GREY}{format_time_duration(dur):>6}{RESET}|{msg}\n')

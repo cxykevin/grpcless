@@ -40,6 +40,7 @@ class GRPCLess():
         self.life = life
         self.global_middleware = global_middleware
         self.prod_gen_code = []
+        self.before_call = []
 
     def run(self,
             host: str = "0.0.0.0",
@@ -65,6 +66,8 @@ class GRPCLess():
 
         async def start_server():
             server = Server([i() for i in self.services])
+            for i in self.before_call:
+                await i(self)
             async for _ in self.life(server):
                 await server.start(host, port)
                 await server.wait_closed()
@@ -75,6 +78,9 @@ class GRPCLess():
 
     def add_middleware(self, middleware: Callable):
         self.global_middleware.append(middleware)
+
+    def add_before_func(self, call):
+        self.before_call.append(call)
 
     def __set_func_io(self, func: Callable, method: str, stream=None):
         return setio.set_func_io(self, func, method, stream)

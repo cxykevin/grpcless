@@ -3,3 +3,4 @@ dist
 pb
 *.proto
 poetry.lock
+test.py

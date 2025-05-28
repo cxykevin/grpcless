@@ -1,6 +1,7 @@
 from .proto import Proto
 from .engine import GRPCLess
 from .stream import Stream
+from .client import Client
 from . import middleware
 from .tools import main as cmd_tools
 
@@ -16,6 +17,7 @@ __all__ = [
     "Proto",
     "GRPCLess",
     "Stream",
+    "Client",
     "middleware"
 ]
 if __name__ == "__main__":
