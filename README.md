@@ -72,77 +72,39 @@ message Response {
 `test.py`
 
 ```python
-import grpcless # 引入包
+import grpcless
+import test_pb2
 
-import test_pb2 # 直接使用 import 引入 pb
-# 注意：任何结尾为 _pb2 或者为 _grpc 的包都会被自动识别为生成的 protobuf 包
-# 在自己的代码中请勿使用以上后缀结尾
-# 这类包请在引入 grpcless 后进行引入，其导入会被推迟到 Proto 对象创建
+proto = grpcless.Proto("test.proto",
+                       proto_path="./proto")
 
-proto = grpcless.Proto("test.proto", # 在此处可引入多个 .proto 文件
-                       proto_path="./proto") # 引入 Proto 文件
-# 在引入时会自动对 proto 文件进行编译
-# 请勿创建多个 Proto 对象！
-# 其它参数：
-#     output_dir: str = 'pb' # 编译产物文件夹
-#     other_include: list[str] = [] # 其它导入列表
+app = grpcless.GRPCLess(proto, "test.proto:TestService") 
 
 
-# 生命周期定义
-async def life(*args,**kwargs):
-    # your_code
-    yield
-    # 由于没有实现拦截信号，这里的代码暂时不会执行
-# 在 GRPCLess 中指定 life 参数即可
-
-# 定义服务
-app = grpcless.GRPCLess(proto, "test.proto:TestService") # 这里可一次引入多个服务
-
-
-# 这里可以定义全局中间件，中间件本质上是一个装饰器
-def middleware(func: Callable[[Any], Any]) -> Callable:
-    async def warpper(request) -> Any: # 注意中间件处理的是请求对象而不是流
-        # tips: 如果需要直接对流进行处理可以注册为 grpclib 中间件
-        print("Middleware called! ")
-        ret = await func(request)
-        return ret
-    return warpper
-# app.add_middleware(middleware)
-# 越晚被注册的中间件会在越内层运行
-
-# 一元请求
-# 如果具有多个 Service，请使用 Service:function 的形式
 @app.request("SimpleMethod")
-# 暂时只支持异步函数
 async def simple_method(int32_value: int, int64_value: int,
                         bytes_value: bytes, name: str):
-    # pb 文件中的参数会被自动展开（仅展开一层）
     print("simple_method", int32_value, int64_value, bytes_value, name)
-    return { # 以字典形式返回值，注意也只展开一层
+    return {
         "status_code": 114514,
-        "a": test_pb2.InnerMsg( # 对于嵌套消息仍旧需要手动构建
+        "a": test_pb2.InnerMsg(
             value=1
         )
     }
 
-# 服务端流
 @app.client_stream("ClientStreamingMethod")
 async def clistream_method(stream: grpcless.Stream):
-    async for request in stream: # 使用 async for 语法接受消息
-        # 也支持使用 recv_message
+    async for request in stream:
         print(request)
         if (request.int32_value == 1):
             break
     return {"status_code": 114514}
 
-# 客户端流
 @app.server_stream("ServerStreamingMethod")
 async def serverst_method(stream: grpcless.Stream, int32_value: int, int64_value: int,
                           bytes_value: bytes, name: str):
-    # 对于流对象，名称请使用固定的 stream
-    await stream.send_message({"status_code": 1234}) # 只展开一层
+    await stream.send_message({"status_code": 1234}) 
 
-# 双向流
 @app.stream("BidirectionalStreamingMethod")
 async def stream_method(stream: grpcless.Stream):
     async for request in stream:
@@ -188,14 +150,14 @@ grpcless build test.py:app test.py # 这里可以补充其它源文件
 
 > 生产模式的代码会去除所有动态部分，以便于更好进行静态优化
 
-### 局限
+## 局限
 
 - 目前未实现证书相关的导入，暂时不支持 GRPC TLS（待办）
 - 目前未实现日志的存储以及异步优化（待办）
 - 不能导入复杂的 .proto 文件
 - 缺少优化相关的类型注解
 
-### 对比
+## 对比
 
 |  | grpcless | fast-grpc | grpclib | grpcio  |
 | :-- | :-: | :-: | :-: | :-: |

@@ -85,7 +85,9 @@ class GRPCLess():
     def __set_func_io(self, func: Callable, method: str, stream=None):
         return setio.set_func_io(self, func, method, stream)
 
-    def request(self, method: str, *, middleware: list[Callable] = [LogMiddleware], use_global_middleware: bool = True):
+    def request(self, method: str, *, middleware: list[Callable] = [], _sys_middleware: list[Callable] = [LogMiddleware], use_global_middleware: bool = True):
+        sum_middleware = _sys_middleware + middleware
+
         def decorator(func):
             # 构建输入映射
             obj, methodname, request_solve, outtype_realobj, response_solve = self.__set_func_io(
@@ -97,7 +99,7 @@ class GRPCLess():
             if (use_global_middleware):
                 for i in reversed(self.global_middleware):
                     run = i(run)
-            for i in reversed(middleware):
+            for i in reversed(sum_middleware):
                 run = i(run)
 
             async def wrapper(self, stream):
@@ -108,7 +110,9 @@ class GRPCLess():
             return wrapper
         return decorator
 
-    def stream(self, method: str, *, middleware: list[Callable] = [LogStreamMiddleware], use_global_middleware: bool = True):
+    def stream(self, method: str, *, middleware: list[Callable] = [LogStreamMiddleware], use_global_middleware: bool = True, _sys_middleware: list[Callable] = [LogStreamMiddleware]):
+        sum_middleware = _sys_middleware + middleware
+
         def decorator(func):
             # 构建输入映射
             obj, methodname, request_solve, outtype_realobj, response_solve = self.__set_func_io(
@@ -128,7 +132,7 @@ class GRPCLess():
             if (use_global_middleware):
                 for i in reversed(self.global_middleware):
                     run = i(run)
-            for i in reversed(middleware):
+            for i in reversed(sum_middleware):
                 run = i(run)
 
             async def wrapper(self, stream):
@@ -138,7 +142,9 @@ class GRPCLess():
             return wrapper
         return decorator
 
-    def server_stream(self, method: str, *, middleware: list[Callable] = [LogStreamMiddleware], use_global_middleware: bool = True):
+    def server_stream(self, method: str, *, middleware: list[Callable] = [LogStreamMiddleware], use_global_middleware: bool = True, _sys_middleware: list[Callable] = [LogStreamMiddleware]):
+        sum_middleware = _sys_middleware + middleware
+
         def decorator(func):
             # 构建输入映射
             obj, methodname, request_solve, outtype_realobj, response_solve = self.__set_func_io(
@@ -157,7 +163,7 @@ class GRPCLess():
             if (use_global_middleware):
                 for i in reversed(self.global_middleware):
                     run = i(run)
-            for i in reversed(middleware):
+            for i in reversed(sum_middleware):
                 run = i(run)
 
             async def wrapper(self, stream):
@@ -167,7 +173,9 @@ class GRPCLess():
             return wrapper
         return decorator
 
-    def client_stream(self, method: str, *, middleware: list[Callable] = [LogStreamMiddleware], use_global_middleware: bool = True):
+    def client_stream(self, method: str, *, middleware: list[Callable] = [], use_global_middleware: bool = True, _sys_middleware: list[Callable] = [LogStreamMiddleware]):
+
+        sum_middleware = _sys_middleware + middleware
 
         def decorator(func):
             # 构建输入映射
@@ -185,7 +193,7 @@ class GRPCLess():
             if (use_global_middleware):
                 for i in reversed(self.global_middleware):
                     run = i(run)
-            for i in reversed(middleware):
+            for i in reversed(sum_middleware):
                 run = i(run)
 
             async def wrapper(self, stream):
