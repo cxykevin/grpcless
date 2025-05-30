@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "grpcless"
-version = "0.0.2"
+version = "0.0.3"
 description = "grpcless Python GRPC Engine"
 authors = ["cxykevin <cxykevin@yeah.net>"]
 license = "MIT"
